@@ -1,0 +1,15 @@
+{
+  "name": "Perfil Tienda DM",
+  "short_name": "Perfil TD",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f3f1e7",
+  "theme_color": "#006241",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

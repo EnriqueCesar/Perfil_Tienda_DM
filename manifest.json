@@ -1,9 +1,9 @@
 {
-  "name": "Perfil Tienda DM",
-  "short_name": "Perfil TD",
-  "start_url": "index.html",
+  "name": "Perfil RD DM Tienda 2.0",
+  "short_name": "Perfil 2.0",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f3f1e7",
+  "background_color": "#f6f1e7",
   "theme_color": "#006241",
   "icons": [
     {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Perfil RD · DM · Tienda 3.0</title>
+  <title>Perfil RD · DM · Tienda 4.0</title>
   <meta name="theme-color" content="#006241" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
@@ -13,7 +13,7 @@
 <body>
   <header class="hero">
     <div>
-      <div class="eyebrow">STARBUCKS · PERFIL VISITA 3.0 · #GreenApronService</div>
+      <div class="eyebrow">STARBUCKS · PERFIL VISITA 4.0 · #GreenApronService</div>
       <h1>Perfil RD · DM · Tienda</h1>
       <p id="periodo">Enero a Mayo · YTD</p>
     </div>
@@ -103,5 +103,6 @@
 
   <script src="data.js"></script>
   <script src="app.js"></script>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}</script>
 </body>
 </html>

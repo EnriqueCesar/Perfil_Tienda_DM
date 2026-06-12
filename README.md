@@ -1,17 +1,12 @@
-# Perfil RD · DM · Tienda 3.0
+# Perfil RD · DM · Tienda 4.0
 
 Proyecto HTML listo para GitHub Pages.
 
-## Archivos principales
-- `index.html`
-- `style.css`
-- `app.js`
-- `data.js`
-- `Store_Master_Audit.csv`
-
-## Enfoque 3.0
-- Directorio como fuente oficial de nombre.
-- Selección por Tienda/CeCo, DM y RD.
-- Scorecard ejecutivo, fortalezas y oportunidades.
-- Indicadores Partner, Cliente, Negocio y Cada Taza Cuenta.
-- Mix Tipo Orden y Mix Producto con filtro de mes.
+## Mejoras 4.0
+- Mix Producto muestra las 5 familias disponibles.
+- Colores Starbucks diferenciados para Mix de Orden y Producto.
+- Apertura en formato DD/MM/AAAA.
+- AWS YTD como promedio semanal del periodo.
+- DT Time compara DT vs AA y muestra diferencia absoluta.
+- Búsqueda con similitud de nombres para DM/RD y fuentes con/sin acentos.
+- Manifest + Service Worker para instalación como app.

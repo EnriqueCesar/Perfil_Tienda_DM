@@ -1,1 +1,1 @@
-{"name":"Perfil RD DM Tienda 3.0","short_name":"Perfil 3.0","start_url":"./","display":"standalone","background_color":"#f6f1e7","theme_color":"#006241","icons":[{"src":"icon.svg","sizes":"64x64","type":"image/svg+xml"}]}
+{"name":"Perfil RD DM Tienda 4.0","short_name":"Perfil 4.0","start_url":"./","scope":"./","display":"standalone","background_color":"#f6f1e7","theme_color":"#006241","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml"}]}

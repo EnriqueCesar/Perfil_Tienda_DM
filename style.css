@@ -21,3 +21,7 @@ h2,h3{margin:0}.hero p{margin:8px 0 0;font-size:17px}.hero-actions{display:flex;
 @media (max-width:1200px){.exec-grid{grid-template-columns:repeat(3,1fr)}.layout{grid-template-columns:1fr}.side-panel{position:static}.card-grid{grid-template-columns:1fr}}
 @media (max-width:780px){.hero{padding:28px 24px;align-items:flex-start;flex-direction:column}.shell{padding:18px}.toolbar{flex-direction:column;align-items:stretch}.searchbox{justify-content:stretch}.tabs{justify-content:center}.identity-card{grid-template-columns:86px 1fr}.photo-box{height:86px;width:86px}.base-grid,.icon-cards,.exec-grid,.insight-grid{grid-template-columns:1fr}.section-head p{text-align:left}.searchbox{flex-direction:column}.btn.green{width:100%}}
 @media print{.toolbar,.hero-actions,footer{display:none}.hero{padding:18px 28px}.shell{padding:14px}.layout{grid-template-columns:30% 70%;gap:12px}.card,.mix-card,.identity-card,.base-item,.side-panel,.executive-panel{box-shadow:none}.canvas-wrap{height:190px}.mini-canvas{height:150px}.exec-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* v4 refinements */
+.dt-summary{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}.icon-card:nth-child(5){grid-column:1 / -1}.icon-card{min-height:42px}.icon-badge{box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+@media (min-width:1200px){.icon-card:nth-child(5){grid-column:auto}}

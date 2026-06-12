@@ -1,5 +1,5 @@
 const D=window.PERFIL_DATA;
-let mode='tienda', current=null, charts={}, mixMonth='YTD';
+let mode='tienda', current=null, charts={}, mixMonth='YTD', optionItems=[];
 
 const $=id=>document.getElementById(id);
 const months=D.months;
@@ -66,6 +66,23 @@ function groupByMonth(source,metric,agg='avg',key='ceco'){
   const rows=key==='dm'?rowsByDM(source,scopeDMs()):rowsByCeco(source,scopeCecos());
   const out=[]; for(let m=1;m<=12;m++){const vals=rows.filter(r=>r.m===m).map(r=>r[metric]);out.push(agg==='sum'?sum(vals):avg(vals));} return out;
 }
+function closedMaxMonth(){
+  const base=[...(D.venta||[]),...(D.pcs||[]),...(D.adt||[]),...(D.ticket||[])].map(x=>x.m).filter(Boolean);
+  const m=Math.max(...base);
+  return isFinite(m)?m:12;
+}
+function closedSource(source){const max=closedMaxMonth();return (source||[]).filter(r=>!r.m||r.m<=max);}
+function selectedLabel(){
+  if(mode==='tienda'){const d=byCeco[current]||{};return `${d.ceco||current} · ${d.tienda||current}`;}
+  return current||'';
+}
+function setSelectorValue(v,auto=false){$('selector').value=v||''; if(auto)applySelection();}
+function exportPDF(){
+  const label=String(mode==='tienda'?(byCeco[current]?.tienda||current):current||'Perfil').replace(/[\/:*?"<>|]+/g,' ').replace(/\s+/g,' ').trim();
+  const period=($('periodo')?.textContent||'YTD').replace(/\s*·\s*/g,'_').replace(/\s+/g,'_');
+  document.title=`Perfil_${mode.toUpperCase()}_${label}_${period}`;
+  window.print();
+}
 function latest(vals){for(let i=vals.length-1;i>=0;i--)if(valid(vals[i]))return vals[i];return null;}
 function ytd(vals,agg='avg'){return agg==='sum'?sum(vals):avg(vals);}
 function monthlyDiff(base,compare,mode='minus'){return base.map((v,i)=>valid(v)&&valid(compare[i])?(mode==='aaMinus'?compare[i]-v:v-compare[i]):null);}
@@ -92,11 +109,27 @@ function compareCard(title,source,a,b,opt={}){
   setTimeout(()=>makeChart(id,{type:'line',data:{labels:monthShort,datasets:[{label:'Real',data:va,tension:.35,borderWidth:3,borderColor:'#00754a'},{label:'Referencia',data:vb,tension:.35,borderWidth:2,borderColor:'#8b6f47'},{label:'Dif',data:d,type:'bar',backgroundColor:'rgba(0,117,74,.14)'}]},options:chartOpt(type)}),0);
   return html;
 }
-function setMode(m){mode=m;['Tienda','DM','RD'].forEach(x=>$('tab'+x).classList.toggle('active',m===x.toLowerCase()));$('selector').placeholder=m==='tienda'?'Buscar tienda por CeCo o nombre...':m==='dm'?'Buscar DM...':'Buscar RD...';fillOptions();applySelection();}
-function fillOptions(){let opts=[];if(mode==='tienda')opts=directory.map(d=>`${d.ceco} · ${d.tienda}`).sort();if(mode==='dm')opts=[...new Set(directory.map(x=>x.dm).filter(Boolean))].sort();if(mode==='rd')opts=[...new Set(directory.map(x=>x.rd).filter(Boolean))].sort();$('options').innerHTML=opts.map(x=>`<option value="${x}"></option>`).join('');if(!opts.includes($('selector').value))$('selector').value=opts[0]||'';fillMonthFilter();}
+function setMode(m){
+  mode=m;
+  ['Tienda','DM','RD'].forEach(x=>$('tab'+x).classList.toggle('active',m===x.toLowerCase()));
+  $('selector').placeholder=m==='tienda'?'Buscar o elige tienda por CeCo / nombre...':m==='dm'?'Buscar o elige DM...':'Buscar o elige RD...';
+  fillOptions();
+  applySelection();
+}
+function fillOptions(){
+  if(mode==='tienda')optionItems=directory.map(d=>`${d.ceco} · ${d.tienda}`).sort();
+  if(mode==='dm')optionItems=[...new Set(directory.map(x=>x.dm).filter(Boolean))].sort();
+  if(mode==='rd')optionItems=[...new Set(directory.map(x=>x.rd).filter(Boolean))].sort();
+  $('options').innerHTML=optionItems.map(x=>`<option value="${x}"></option>`).join('');
+  const sel=$('selectorSelect');
+  if(sel){sel.innerHTML=optionItems.map(x=>`<option value="${x}">${x}</option>`).join('');}
+  if(!optionItems.includes($('selector').value))$('selector').value=optionItems[0]||'';
+  if(sel)sel.value=$('selector').value;
+  fillMonthFilter();
+}
 function fillMonthFilter(){const sel=$('mixMonth');if(!sel)return;sel.innerHTML=`<option value="YTD">YTD</option>`+months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');sel.value=mixMonth;}
-function applySelection(){current=resolveSelection(); if(current)render();}
-function period(){const all=[...rowsByCeco(D.pcs,scopeCecos()),...rowsByCeco(D.venta,scopeCecos()),...rowsByCeco(D.ctc,scopeCecos())].map(x=>x.m).filter(Boolean);let a=Math.min(...all),b=Math.max(...all);$('periodo').textContent=(isFinite(a)?months[a-1]:'Mes inicio')+' a '+(isFinite(b)?months[b-1]:'Último dato')+' · YTD';}
+function applySelection(){current=resolveSelection(); const sel=$('selectorSelect'); if(sel&&optionItems.includes($('selector').value))sel.value=$('selector').value; if(current)render();}
+function period(){const all=[...rowsByCeco(D.pcs,scopeCecos()),...rowsByCeco(D.venta,scopeCecos()),...rowsByCeco(D.adt,scopeCecos()),...rowsByCeco(D.ticket,scopeCecos())].map(x=>x.m).filter(Boolean);let a=Math.min(...all),b=Math.max(...all);$('periodo').textContent=(isFinite(a)?months[a-1]:'Mes inicio')+' a '+(isFinite(b)?months[b-1]:'Último dato')+' · YTD';}
 function baseItem(k,v){return `<div class="base-item"><small>${k}</small><b>${v||'—'}</b></div>`;}
 function countMap(arr){const o={};arr.filter(Boolean).forEach(x=>o[x]=(o[x]||0)+1);return o;}
 function topCount(o){const e=Object.entries(o).sort((a,b)=>b[1]-a[1])[0];return e?`${e[0]} · ${e[1]}`:'—';}
@@ -105,12 +138,53 @@ function renderBase(){const cecos=scopeCecos(), rows=directory.filter(x=>cecos.i
 function renderMixOnly(){mixMonth=$('mixMonth').value;renderMix();}
 function renderMix(){const rows=rowsByCeco(D.mix,scopeCecos()).filter(x=>mixMonth==='YTD'||x.m===Number(mixMonth));const order={},cat={};rows.forEach(r=>{Object.entries(r.order||{}).forEach(([k,v])=>order[k]=(order[k]||0)+v);Object.entries(r.category||{}).forEach(([k,v])=>cat[k]=(cat[k]||0)+v);});const n=Math.max(rows.length,1);Object.keys(order).forEach(k=>order[k]/=n);Object.keys(cat).forEach(k=>cat[k]/=n);iconCards('orderIconCards',order,'order');iconCards('categoryIconCards',cat,'cat');dough('chartOrder',order);dough('chartCategory',cat);}
 function iconFor(k,type){const s=k.toLowerCase();if(type==='order'){if(s.includes('drive'))return'DT';if(s.includes('pick')||s.includes('delivery'))return'PD';if(s.includes('lobby'))return'LB';}else{if(s.includes('filtrado')||s.includes('café')||s.includes('cafe'))return'CF';if(s.includes('espresso'))return'ESP';if(s.includes('food'))return'FD';if(s.includes('cbs'))return'CBS';if(s.includes('otro'))return'OT';}return'•';}
-function mixColor(k,i,type){const s=normText(k);const order={'DRIVE THRU':'#006241','LOBBY':'#00754a','PICK UP DELIVERY':'#00a862','PICK UP DEL':'#00a862'};const cat={'CAFE FILTRADO':'#006241','CBS':'#1e8a5a','ESPRESSO':'#00a862','FOOD':'#d4e9e2','OTRO':'#8b6f47'};const pal=['#006241','#00754a','#00a862','#d4e9e2','#8b6f47','#cba258'];if(type==='order'){if(s.includes('DRIVE'))return order['DRIVE THRU'];if(s.includes('LOBBY'))return order.LOBBY;if(s.includes('PICK')||s.includes('DELIVERY'))return order['PICK UP DELIVERY'];}else{if(s.includes('FILTRADO')||s.includes('CAFE'))return cat['CAFE FILTRADO'];if(s.includes('CBS'))return cat.CBS;if(s.includes('ESPRESSO'))return cat.ESPRESSO;if(s.includes('FOOD'))return cat.FOOD;if(s.includes('OTRO'))return cat.OTRO;}return pal[i%pal.length];}
-function iconCards(id,obj,type){const entries=Object.entries(obj).filter(([k,v])=>valid(v)&&v>0).sort((a,b)=>b[1]-a[1]);$(id).innerHTML=entries.map(([k,v],i)=>`<div class="icon-card"><span class="icon-badge" style="background:${mixColor(k,i,type)}">${iconFor(k,type)}</span><div><b>${cleanLabel(k)}</b><small>${fmt(v,'pct')}</small></div></div>`).join('')||'<div class="note">Sin data disponible</div>';}
+function mixColor(k,i,type){
+  const s=normText(k);
+  const order={'DRIVE THRU':'#006241','LOBBY':'#8B6F47','PICK UP DELIVERY':'#00A862','PICK UP DEL':'#00A862'};
+  const cat={'CAFE FILTRADO':'#6F4E37','CBS':'#00754A','ESPRESSO':'#CBA258','FOOD':'#D4E9E2','OTRO':'#1E3932'};
+  const pal=['#006241','#8B6F47','#00A862','#CBA258','#1E3932','#D4E9E2'];
+  if(type==='order'){
+    if(s.includes('DRIVE'))return order['DRIVE THRU'];
+    if(s.includes('LOBBY'))return order.LOBBY;
+    if(s.includes('PICK')||s.includes('DELIVERY'))return order['PICK UP DELIVERY'];
+  }else{
+    if(s.includes('FILTRADO')||s.includes('CAFE'))return cat['CAFE FILTRADO'];
+    if(s.includes('CBS'))return cat.CBS;
+    if(s.includes('ESPRESSO'))return cat.ESPRESSO;
+    if(s.includes('FOOD'))return cat.FOOD;
+    if(s.includes('OTRO'))return cat.OTRO;
+  }
+  return pal[i%pal.length];
+}
+function iconCards(id,obj,type){
+  let entries=Object.entries(obj).filter(([k,v])=>valid(v)&&v>0);
+  if(type==='cat'){
+    const required=['Café filtrado','CBS','Espresso','Food','Otro'];
+    required.forEach(k=>{if(!entries.some(([e])=>normText(e)===normText(k)))entries.push([k,0]);});
+  }
+  entries=entries.sort((a,b)=>b[1]-a[1]);
+  $(id).innerHTML=entries.map(([k,v],i)=>`<div class="icon-card"><span class="icon-badge" style="background:${mixColor(k,i,type)}">${iconFor(k,type)}</span><div><b>${cleanLabel(k)}</b><small>${fmt(v,'pct')}</small></div></div>`).join('')||'<div class="note">Sin data disponible</div>';
+}
 function dough(id,obj){const labels=Object.keys(obj).filter(k=>valid(obj[k])&&obj[k]>0),vals=labels.map(k=>obj[k]);makeChart(id,{type:'doughnut',data:{labels,datasets:[{data:vals,borderWidth:2,backgroundColor:labels.map((k,i)=>mixColor(k,i,id==='chartOrder'?'order':'cat'))}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:12}},tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw,'pct')}`}}}}});}
 function metricValue(source,metric,agg='avg',key='ceco'){return ytd(groupByMonth(source,metric,agg,key),agg);}function metricDiff(source,a,b,inverse=false){const va=groupByMonth(source,a),vb=groupByMonth(source,b),d=avg(monthlyDiff(va,vb));return {raw:d,score:valid(d)?(inverse?-d:d):null};}
 function status(metric,value,diff){if(metric==='conexion')return value>=.60?'good':value>=.55?'warn':'bad';if(metric==='bebida')return value>=.71?'good':value>=.65?'warn':'bad';if(metric==='labor'||metric==='costo'||metric==='dt')return valid(diff)&&diff<=0?'good':'bad';if(metric==='ebitda')return valid(diff)&&diff>=0?'good':'bad';return 'good';}
-function renderExecutive(){const conn=metricValue(D.pcs,'Conexion'), beb=metricValue(D.pcs,'Calidad de la Bebida'), labor=metricValue(D.pcs,'Labor'), ebitda=metricValue(D.pcs,'EBITDA'), aws=avg(groupByMonth(D.venta,'aws','sum')), ctcVal=mode==='tienda'?metricValue(D.ctc,'ctc'):metricValue(D.ctc_dm,'ctc','avg','dm');const dl=metricDiff(D.pcs,'Labor','Labor PPTO',true).raw, de=metricDiff(D.pcs,'EBITDA','EBITDA PPTO').raw, dt=metricDiff(D.pcs,'DT Time','Tiempo DT AA',true).raw;const kpis=[['Conexión',fmt(conn,'pct'),status('conexion',conn),'Experiencia'],['Bebida',fmt(beb,'pct'),status('bebida',beb),'Calidad'],['Labor',fmt(labor,'pct'),status('labor',labor,dl),'Vs ppto'],['EBITDA',fmt(ebitda,'pct'),status('ebitda',ebitda,de),'Vs ppto'],['AWS',fmt(aws,'moneyK'),'good','Venta semanal'],['CTC',fmt(ctcVal,'pct'),'good','Cada Taza Cuenta']];const items=[['Conexión',metricDiff(D.pcs,'Conexion','Conexion AA')],['Bebida',metricDiff(D.pcs,'Calidad de la Bebida','Calidad de Bebida AA')],['Food Attach',metricDiff(D.pcs,'Food Attach','Food Attach AA')],['SR',metricDiff(D.pcs,'SR','% SR AA')],['Labor',metricDiff(D.pcs,'Labor','Labor PPTO',true)],['Costo',metricDiff(D.pcs,'Costo %','Costo % PPTO',true)],['EBITDA',metricDiff(D.pcs,'EBITDA','EBITDA PPTO')],['DT',metricDiff(D.pcs,'DT Time','Tiempo DT AA',true)]];const good=items.filter(x=>valid(x[1].score)&&x[1].score>0).sort((a,b)=>b[1].score-a[1].score).slice(0,3);const risk=items.filter(x=>valid(x[1].score)&&x[1].score<0).sort((a,b)=>a[1].score-b[1].score).slice(0,3);$('executivePanel').innerHTML=`<div class="exec-title"><div><h2>Resumen Ejecutivo</h2><p class="note">Lectura rápida para toma de decisiones</p></div><span class="pill neutral">${scopeCecos().length} tienda(s)</span></div><div class="exec-grid">${kpis.map(k=>`<div class="exec-kpi"><small>${k[0]}</small><b>${k[1]}</b><span class="status ${k[2]}">${k[3]}</span></div>`).join('')}</div><div class="insight-grid"><div class="insight-box"><h4>Fortalezas</h4><ul>${good.length?good.map(x=>`<li>${x[0]} · ${fmt(Math.abs(x[1].raw),x[0]==='DT'?'sec':'pp')}</li>`).join(''):'<li>Sin variaciones positivas relevantes</li>'}</ul></div><div class="insight-box"><h4>Oportunidades</h4><ul>${risk.length?risk.map(x=>`<li>${x[0]} · ${fmt(Math.abs(x[1].raw),x[0]==='DT'?'sec':'pp')}</li>`).join(''):'<li>Sin alertas críticas con datos disponibles</li>'}</ul></div></div>`;}
+function insightFmt(name,raw){
+  if(name==='DT')return sec(Math.abs(toSeconds(raw)||0));
+  return fmt(raw,'pp')+' pp';
+}
+function renderExecutive(){
+  const ctcSrc=closedSource(mode==='tienda'?D.ctc:D.ctc_dm);
+  const conn=metricValue(D.pcs,'Conexion'), beb=metricValue(D.pcs,'Calidad de la Bebida'), labor=metricValue(D.pcs,'Labor'), ebitda=metricValue(D.pcs,'EBITDA');
+  const aws=avg(groupByMonth(D.venta,'aws','sum'));
+  const ctcVal=mode==='tienda'?metricValue(ctcSrc,'ctc'):metricValue(ctcSrc,'ctc','avg','dm');
+  const dl=metricDiff(D.pcs,'Labor','Labor PPTO',true).raw, de=metricDiff(D.pcs,'EBITDA','EBITDA PPTO').raw;
+  const kpis=[['Conexión',fmt(conn,'pct'),status('conexion',conn),'Experiencia'],['Bebida',fmt(beb,'pct'),status('bebida',beb),'Calidad'],['Labor',fmt(labor,'pct'),status('labor',labor,dl),'Vs ppto'],['EBITDA',fmt(ebitda,'pct'),status('ebitda',ebitda,de),'Vs ppto'],['AWS',fmt(aws,'moneyK'),'good','Venta semanal'],['CTC',fmt(ctcVal,'pct'),'good','Cada Taza Cuenta']];
+  const items=[['Conexión',metricDiff(D.pcs,'Conexion','Conexion AA')],['Bebida',metricDiff(D.pcs,'Calidad de la Bebida','Calidad de Bebida AA')],['Food Attach',metricDiff(D.pcs,'Food Attach','Food Attach AA')],['SR',metricDiff(D.pcs,'SR','% SR AA')],['Labor',metricDiff(D.pcs,'Labor','Labor PPTO',true)],['Costo',metricDiff(D.pcs,'Costo %','Costo % PPTO',true)],['EBITDA',metricDiff(D.pcs,'EBITDA','EBITDA PPTO')],['DT',metricDiff(D.pcs,'DT Time','Tiempo DT AA',true)]];
+  const good=items.filter(x=>valid(x[1].score)&&x[1].score>0).sort((a,b)=>b[1].score-a[1].score).slice(0,3);
+  const risk=items.filter(x=>valid(x[1].score)&&x[1].score<0).sort((a,b)=>a[1].score-b[1].score).slice(0,3);
+  $('executivePanel').innerHTML=`<div class="exec-title"><div><h2>Resumen Ejecutivo</h2><p class="note">Lectura rápida para toma de decisiones</p></div><span class="pill neutral">${scopeCecos().length} tienda(s)</span></div><div class="exec-grid">${kpis.map(k=>`<div class="exec-kpi"><small>${k[0]}</small><b>${k[1]}</b><span class="status ${k[2]}">${k[3]}</span></div>`).join('')}</div><div class="insight-grid"><div class="insight-box"><h4>Fortalezas</h4><ul>${good.length?good.map(x=>`<li>${x[0]} · ${insightFmt(x[0],x[1].raw)}</li>`).join(''):'<li>Sin variaciones positivas relevantes</li>'}</ul></div><div class="insight-box"><h4>Oportunidades</h4><ul>${risk.length?risk.map(x=>`<li>${x[0]} · ${insightFmt(x[0],x[1].raw)}</li>`).join(''):'<li>Sin alertas críticas con datos disponibles</li>'}</ul></div></div>`;
+}
+
 
 function dtCompareCard(){
   const id='c'+Math.random().toString(36).slice(2);
@@ -122,13 +196,14 @@ function dtCompareCard(){
   const yDt=avg(dt), yAa=avg(aa), yDif=valid(yDt)&&valid(yAa)?Math.abs(yDt-yAa):null;
   const better=valid(yDt)&&valid(yAa)?yDt<=yAa:null;
   const chips=dif.map((x,i)=>valid(x)?`<span class="pill ${state[i]?'pos':'neg'}">${monthShort[i]} ${sec(x)}</span>`:'').join('');
-  const html=`<article class="card"><div class="card-head"><div><h3>DT Time</h3><div class="note">DT vs AA · menor tiempo es verde</div></div><div><div class="kpi">${sec(yDt)}</div><div class="note">YTD DT · AA ${sec(yAa)}</div></div></div><div class="dt-summary"><span class="pill neutral">DT ${sec(yDt)}</span><span class="pill neutral">AA ${sec(yAa)}</span><span class="pill ${better?'pos':'neg'}">Dif ${sec(yDif)}</span></div><div class="canvas-wrap"><canvas id="${id}"></canvas></div><div class="pill-row">${chips}</div></article>`;
-  setTimeout(()=>makeChart(id,{type:'line',data:{labels:monthShort,datasets:[{label:'DT Time',data:dt,tension:.35,borderWidth:3,borderColor:'#00754a',pointRadius:3},{label:'DT AA',data:aa,tension:.35,borderWidth:2,borderColor:'#8b6f47',pointRadius:3},{label:'Dif seg',data:dif,type:'bar',backgroundColor:'rgba(203,162,88,.22)',borderWidth:0}]},options:chartOpt('sec')}),0);
+  const html=`<article class="card"><div class="card-head"><div><h3>DT Time</h3><div class="note">DT vs AA · menor tiempo es verde</div></div><div><div class="kpi ${better?'':'neg-text'}">${sec(yDt)}</div><div class="note">Promedio YTD</div></div></div><div class="dt-summary"><span class="pill neutral">DT ${sec(yDt)}</span><span class="pill neutral">AA ${sec(yAa)}</span><span class="pill ${better?'pos':'neg'}">Dif ${sec(yDif)}</span></div><div class="canvas-wrap"><canvas id="${id}"></canvas></div><div class="pill-row">${chips}</div></article>`;
+  setTimeout(()=>makeChart(id,{type:'line',data:{labels:monthShort,datasets:[{label:'DT Time',data:dt,tension:.35,borderWidth:3,borderColor:'#006241',pointRadius:3},{label:'DT AA',data:aa,tension:.35,borderWidth:2,borderColor:'#8B6F47',pointRadius:3},{label:'Dif seg',data:dif,type:'bar',backgroundColor:state.map(v=>v===null?'rgba(216,208,196,.25)':v?'rgba(0,117,74,.18)':'rgba(194,65,12,.18)'),borderWidth:0}]},options:chartOpt('sec')}),0);
   return html;
 }
 
-function renderSections(){ $('partnerGrid').innerHTML=chartCard({title:'Rolling RY',source:D.pcs,metric:'Rolling RY',ytd:false,diffMetric:'Rolling RY AA',diffMode:'aaMinus',diffType:'pp',subtitle:'12M atrás · objetivo <30%'})+chartCard({title:'IPLH',source:D.pcs,metric:'IPLH'})+chartCard({title:'TPLH',source:D.pcs,metric:'TPLH'})+chartCard({title:'Labor %',source:D.pcs,metric:'Labor',diffMetric:'Labor PPTO',diffType:'pp',inverseDiff:true,subtitle:'Menor a presupuesto es ahorro'})+chartCard({title:'ICA Score',source:D.pcs,metric:'ICA Score',type:'num',bar:true,subtitle:'Auditorías disponibles'});$('customerGrid').innerHTML=chartCard({title:'Venta Mes',source:D.venta,metric:'venta_mes',type:'moneyM',agg:'sum',bar:true,subtitle:'Venta mensual'})+chartCard({title:'AWS',source:D.venta,metric:'aws',type:'moneyK',agg:'sum',ytdAgg:'avg',bar:true,subtitle:'Average Weekly Sales'})+chartCard({title:'ADT',source:D.adt,metric:'adt',type:'num',diffSourceMetric:'adt_diff',diffType:'num',subtitle:'ADT real + dif vs AA'})+chartCard({title:'Ticket Promedio',source:D.ticket,metric:'ticket',type:'ticket',diffSourceMetric:'ticket_diff',diffSource:D.ticket,diffType:'pp',subtitle:'Ticket + dif vs AA'})+chartCard({title:'VMT',source:D.pcs,metric:'VMT%'})+chartCard({title:'OMT',source:D.pcs,metric:'OMT%'})+chartCard({title:'Conexión',source:D.pcs,metric:'Conexion',diffMetric:'Conexion AA',diffType:'pp'})+chartCard({title:'Calidad Bebida',source:D.pcs,metric:'Calidad de la Bebida',diffMetric:'Calidad de Bebida AA',diffType:'pp'})+chartCard({title:'Food Attach',source:D.pcs,metric:'Food Attach',diffMetric:'Food Attach AA',diffType:'pp'})+chartCard({title:'Segundas Ventas',source:D.pcs,metric:'Segundas Ventas',type:'num'})+chartCard({title:'SR',source:D.pcs,metric:'SR',diffMetric:'% SR AA',diffType:'pp'})+chartCard({title:'Cada Taza Cuenta',source:mode==='tienda'?D.ctc:D.ctc_dm,metric:'ctc',type:'pct',key:mode==='tienda'?'ceco':'dm',subtitle:'Participación mensual'});$('businessGrid').innerHTML=compareCard('Venta Delivery',D.pcs,'Venta Delivery','Delivery AA',{type:'pct',diffType:'pp'})+compareCard('Costo %',D.pcs,'Costo %','Costo % PPTO',{inverseDiff:true,type:'pct',diffType:'pp'})+compareCard('EBITDA',D.pcs,'EBITDA','EBITDA PPTO',{type:'pct',diffType:'pp'})+dtCompareCard();}
+
+function renderSections(){ $('partnerGrid').innerHTML=chartCard({title:'Rolling RY',source:D.pcs,metric:'Rolling RY',ytd:false,diffMetric:'Rolling RY AA',diffMode:'aaMinus',diffType:'pp',subtitle:'12M atrás · objetivo <30%'})+chartCard({title:'IPLH',source:D.pcs,metric:'IPLH'})+chartCard({title:'TPLH',source:D.pcs,metric:'TPLH'})+chartCard({title:'Labor %',source:D.pcs,metric:'Labor',diffMetric:'Labor PPTO',diffType:'pp',inverseDiff:true,subtitle:'Menor a presupuesto es ahorro'})+chartCard({title:'ICA Score',source:D.pcs,metric:'ICA Score',type:'num',bar:true,subtitle:'Auditorías disponibles'});$('customerGrid').innerHTML=chartCard({title:'Venta Mes',source:D.venta,metric:'venta_mes',type:'moneyM',agg:'sum',bar:true,subtitle:'Venta mensual'})+chartCard({title:'AWS',source:D.venta,metric:'aws',type:'moneyK',agg:'sum',ytdAgg:'avg',bar:true,subtitle:'Average Weekly Sales'})+chartCard({title:'ADT',source:D.adt,metric:'adt',type:'num',diffSourceMetric:'adt_diff',diffType:'num',subtitle:'ADT real + dif vs AA'})+chartCard({title:'Ticket Promedio',source:D.ticket,metric:'ticket',type:'ticket',diffSourceMetric:'ticket_diff',diffSource:D.ticket,diffType:'pp',subtitle:'Ticket + dif vs AA'})+chartCard({title:'VMT',source:D.pcs,metric:'VMT%'})+chartCard({title:'OMT',source:D.pcs,metric:'OMT%'})+chartCard({title:'Conexión',source:D.pcs,metric:'Conexion',diffMetric:'Conexion AA',diffType:'pp'})+chartCard({title:'Calidad Bebida',source:D.pcs,metric:'Calidad de la Bebida',diffMetric:'Calidad de Bebida AA',diffType:'pp'})+chartCard({title:'Food Attach',source:D.pcs,metric:'Food Attach',diffMetric:'Food Attach AA',diffType:'pp'})+chartCard({title:'Segundas Ventas',source:D.pcs,metric:'Segundas Ventas',type:'num'})+chartCard({title:'SR',source:D.pcs,metric:'SR',diffMetric:'% SR AA',diffType:'pp'})+chartCard({title:'Cada Taza Cuenta',source:closedSource(mode==='tienda'?D.ctc:D.ctc_dm),metric:'ctc',type:'pct',key:mode==='tienda'?'ceco':'dm',subtitle:'Participación mensual'});$('businessGrid').innerHTML=compareCard('Venta Delivery',D.pcs,'Venta Delivery','Delivery AA',{type:'pct',diffType:'pp'})+compareCard('Costo %',D.pcs,'Costo %','Costo % PPTO',{inverseDiff:true,type:'pct',diffType:'pp'})+compareCard('EBITDA',D.pcs,'EBITDA','EBITDA PPTO',{type:'pct',diffType:'pp'})+dtCompareCard();}
 function render(){Object.keys(charts).forEach(destroy);const cecos=scopeCecos(), rows=directory.filter(x=>cecos.includes(String(x.ceco))), d=rows[0]||{};period();let title=current, sub='';if(mode==='tienda'){title=d.tienda||current;sub=`Gerente: ${d.gerente||'Vacante'}`;$('photoLabel').textContent='Colocar foto gerente';}else if(mode==='dm'){sub=`Región: ${[...new Set(rows.map(x=>x.region))].join(', ')}`;$('photoLabel').textContent='Colocar foto DM';}else{sub=`División: ${[...new Set(rows.map(x=>x.division))].join(', ')}`;$('photoLabel').textContent='Colocar foto RD';}$('profileName').textContent=title;$('profileSub').textContent=sub;renderBase();renderMix();renderExecutive();renderSections();restorePhoto();}
-function photoKey(){return 'perfil_photo_v3_'+mode+'_'+current;}function loadPhoto(e){const f=e.target.files[0];if(!f||!current)return;const r=new FileReader();r.onload=()=>{localStorage.setItem(photoKey(),r.result);$('photoPreview').src=r.result;};r.readAsDataURL(f);}function resetPhoto(){if(current)localStorage.removeItem(photoKey());$('photoPreview').removeAttribute('src');}function restorePhoto(){const v=current&&localStorage.getItem(photoKey());if(v)$('photoPreview').src=v;else $('photoPreview').removeAttribute('src');}
-function staffKey(){return 'staff_v3_'+current;}function saveStaff(){if(!current)return;localStorage.setItem(staffKey(),JSON.stringify({asm:$('staffASM').value,ss:$('staffSS').value,bb:$('staffBB').value}));}function loadStaff(){try{const v=JSON.parse(localStorage.getItem(staffKey())||'{}');$('staffASM').value=v.asm??1;$('staffSS').value=v.ss??1;$('staffBB').value=v.bb??3;}catch(e){}}
+function photoKey(){return 'perfil_photo_v5_'+mode+'_'+current;}function loadPhoto(e){const f=e.target.files[0];if(!f||!current)return;const r=new FileReader();r.onload=()=>{localStorage.setItem(photoKey(),r.result);$('photoPreview').src=r.result;};r.readAsDataURL(f);}function resetPhoto(){if(current)localStorage.removeItem(photoKey());$('photoPreview').removeAttribute('src');}function restorePhoto(){const v=current&&localStorage.getItem(photoKey());if(v)$('photoPreview').src=v;else $('photoPreview').removeAttribute('src');}
+function staffKey(){return 'staff_v5_'+current;}function saveStaff(){if(!current)return;localStorage.setItem(staffKey(),JSON.stringify({asm:$('staffASM').value,ss:$('staffSS').value,bb:$('staffBB').value}));}function loadStaff(){try{const v=JSON.parse(localStorage.getItem(staffKey())||'{}');$('staffASM').value=v.asm??1;$('staffSS').value=v.ss??1;$('staffBB').value=v.bb??3;}catch(e){}}
 fillOptions();applySelection();

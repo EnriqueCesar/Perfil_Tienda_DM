@@ -1,40 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-
-  <rect width="512" height="512" rx="48" fill="#F4F1EA"></rect>
-
-  <!-- SM -->
-  <circle cx="110" cy="120" r="42" fill="none" stroke="#006241" stroke-width="8"></circle>
-  <path d="M90 145 Q110 120 130 145" fill="none" stroke="#006241" stroke-width="8"></path>
-
-  <!-- DM -->
-  <circle cx="256" cy="120" r="42" fill="none" stroke="#006241" stroke-width="8"></circle>
-  <path d="M236 145 Q256 120 276 145" fill="none" stroke="#006241" stroke-width="8"></path>
-
-  <!-- RD -->
-  <circle cx="402" cy="120" r="42" fill="none" stroke="#006241" stroke-width="8"></circle>
-  <path d="M382 145 Q402 120 422 145" fill="none" stroke="#006241" stroke-width="8"></path>
-
-  <!-- Conexión -->
-  <path d="M110 70 Q256 20 402 70" fill="none" stroke="#006241" stroke-width="6" stroke-dasharray="8 12"></path>
-
-  <!-- Tienda -->
-  <rect x="145" y="220" width="220" height="150" rx="10" fill="none" stroke="#006241" stroke-width="10"></rect>
-
-  <path d="M130 220 L380 220 L350 185 L160 185 Z" fill="none" stroke="#006241" stroke-width="10"></path>
-
-  <rect x="175" y="270" width="45" height="100" fill="none" stroke="#006241" stroke-width="8"></rect>
-
-  <rect x="245" y="260" width="90" height="60" fill="none" stroke="#006241" stroke-width="8"></rect>
-
-  <!-- Taza -->
-  <path d="M280 245
-           h20
-           v30
-           h-20
-           z" fill="none" stroke="#006241" stroke-width="6"></path>
-
-  <!-- Texto -->
-  <text x="256" y="455" text-anchor="middle" font-size="42" font-family="Arial" fill="#006241" font-weight="700">
-        PERFIL
-  </text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Perfil RD DM Tienda">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fbf7ee"/><stop offset="1" stop-color="#f4ead8"/></linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#004b34"/><stop offset="1" stop-color="#00754a"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <path d="M96 154 Q256 66 416 154" fill="none" stroke="#006241" stroke-width="10" stroke-linecap="round" stroke-dasharray="2 22"/>
+  <g fill="none" stroke="#006241" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="116" cy="140" r="43"/><path d="M65 222c8-39 34-62 51-62s43 23 51 62"/>
+    <circle cx="256" cy="120" r="47"/><path d="M201 222c10-43 36-67 55-67s45 24 55 67"/>
+    <circle cx="396" cy="140" r="43"/><path d="M345 222c8-39 34-62 51-62s43 23 51 62"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="34" text-anchor="middle">
+    <rect x="64" y="217" width="104" height="56" rx="24" fill="url(#g)"/><text x="116" y="255" fill="#fff">SM</text>
+    <rect x="204" y="217" width="104" height="56" rx="24" fill="url(#g)"/><text x="256" y="255" fill="#fff">DM</text>
+    <rect x="344" y="217" width="104" height="56" rx="24" fill="url(#g)"/><text x="396" y="255" fill="#fff">RD</text>
+  </g>
+  <g fill="none" stroke="#006241" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M144 332h224l-26-48H170z"/>
+    <path d="M155 332v96h202v-96"/>
+    <path d="M137 428h238"/>
+    <path d="M189 428v-65h45v65"/>
+    <path d="M262 363h65v44h-65z"/>
+  </g>
+  <circle cx="256" cy="318" r="35" fill="#006241"/>
+  <path d="M239 318l11 11 24-26" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="256" y="477" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="38" text-anchor="middle" fill="#006241">PERFIL</text>
 </svg>

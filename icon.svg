@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+
+  <rect width="512" height="512" rx="48" fill="#F4F1EA"></rect>
+
+  <!-- SM -->
+  <circle cx="110" cy="120" r="42" fill="none" stroke="#006241" stroke-width="8"></circle>
+  <path d="M90 145 Q110 120 130 145" fill="none" stroke="#006241" stroke-width="8"></path>
+
+  <!-- DM -->
+  <circle cx="256" cy="120" r="42" fill="none" stroke="#006241" stroke-width="8"></circle>
+  <path d="M236 145 Q256 120 276 145" fill="none" stroke="#006241" stroke-width="8"></path>
+
+  <!-- RD -->
+  <circle cx="402" cy="120" r="42" fill="none" stroke="#006241" stroke-width="8"></circle>
+  <path d="M382 145 Q402 120 422 145" fill="none" stroke="#006241" stroke-width="8"></path>
+
+  <!-- Conexión -->
+  <path d="M110 70 Q256 20 402 70" fill="none" stroke="#006241" stroke-width="6" stroke-dasharray="8 12"></path>
+
+  <!-- Tienda -->
+  <rect x="145" y="220" width="220" height="150" rx="10" fill="none" stroke="#006241" stroke-width="10"></rect>
+
+  <path d="M130 220 L380 220 L350 185 L160 185 Z" fill="none" stroke="#006241" stroke-width="10"></path>
+
+  <rect x="175" y="270" width="45" height="100" fill="none" stroke="#006241" stroke-width="8"></rect>
+
+  <rect x="245" y="260" width="90" height="60" fill="none" stroke="#006241" stroke-width="8"></rect>
+
+  <!-- Taza -->
+  <path d="M280 245
+           h20
+           v30
+           h-20
+           z" fill="none" stroke="#006241" stroke-width="6"></path>
+
+  <!-- Texto -->
+  <text x="256" y="455" text-anchor="middle" font-size="42" font-family="Arial" fill="#006241" font-weight="700">
+        PERFIL
+  </text>
+</svg>

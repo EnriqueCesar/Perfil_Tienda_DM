@@ -1,4 +1,4 @@
-# Perfil RD · DM · Tienda 5.0
+# Perfil RD · DM · Tienda 6.0
 
 Proyecto HTML listo para GitHub Pages.
 
@@ -15,5 +15,5 @@ Proyecto HTML listo para GitHub Pages.
 - `apple-touch-icon.png`
 - `Store_Master_Audit.csv`
 
-## Versión 5.0
+## Versión 6.0
 Incluye selector mixto búsqueda/lista desplegable, iconografía PWA, mejoras de AWS, DT Time, resumen ejecutivo, colores de mix y exportación PDF con nombre dinámico.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Perfil RD · DM · Tienda 2.0</title>
+  <title>Perfil RD · DM · Tienda 3.0</title>
   <meta name="theme-color" content="#006241" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
@@ -13,9 +13,9 @@
 <body>
   <header class="hero">
     <div>
-      <div class="eyebrow">STARBUCKS · PERFIL VISITA 2.0</div>
+      <div class="eyebrow">STARBUCKS · PERFIL VISITA 3.0 · #GreenApronService</div>
       <h1>Perfil RD · DM · Tienda</h1>
-      <p id="periodo">Mes inicio a Último dato · YTD</p>
+      <p id="periodo">Enero a Mayo · YTD</p>
     </div>
     <div class="hero-actions">
       <button class="btn white" onclick="window.print()">Exportar PDF</button>
@@ -25,13 +25,13 @@
 
   <main class="shell">
     <section class="toolbar">
-      <div class="tabs">
+      <div class="tabs" aria-label="Nivel de perfil">
         <button id="tabTienda" class="active" onclick="setMode('tienda')">Tienda</button>
         <button id="tabDM" onclick="setMode('dm')">DM</button>
         <button id="tabRD" onclick="setMode('rd')">RD</button>
       </div>
       <div class="searchbox">
-        <input id="selector" list="options" placeholder="Buscar tienda..." />
+        <input id="selector" list="options" placeholder="Buscar tienda por CeCo o nombre..." onkeydown="if(event.key==='Enter')applySelection()" />
         <datalist id="options"></datalist>
         <button class="btn green" onclick="applySelection()">Ver perfil</button>
       </div>
@@ -39,29 +39,36 @@
 
     <section class="layout">
       <aside class="side-panel">
-        <article class="profile-card">
-          <div class="profile-star">★</div>
-          <div>
-            <small id="profileType">Base Tienda</small>
+        <article class="identity-card">
+          <label class="photo-box">
+            <input type="file" accept="image/*" onchange="loadPhoto(event)" />
+            <img id="photoPreview" alt="" />
+            <span id="photoLabel">Colocar foto gerente</span>
+          </label>
+          <div class="identity-text">
             <h2 id="profileName">Selecciona una tienda</h2>
-            <p id="profileSub">Dashboard ejecutivo YTD</p>
+            <p id="profileSub">Perfil ejecutivo YTD</p>
           </div>
         </article>
 
-        <label class="photo-box">
-          <input type="file" accept="image/*" onchange="loadPhoto(event)" />
-          <img id="photoPreview" alt="" />
-          <span>Colocar foto gerente</span>
-        </label>
-
         <div id="baseGrid" class="base-grid"></div>
+        <article id="staffCard" class="staff-card">
+          <div class="staff-title">Plantilla</div>
+          <div class="staff-inputs">
+            <label>ASM<input id="staffASM" type="number" min="0" value="1" onchange="saveStaff()"></label>
+            <label>SS<input id="staffSS" type="number" min="0" value="1" onchange="saveStaff()"></label>
+            <label>BB<input id="staffBB" type="number" min="0" value="3" onchange="saveStaff()"></label>
+          </div>
+        </article>
+
+        <article id="typeVisualCard" class="mix-card hidden">
+          <div class="mix-head"><div><h3>Tipo tienda 5</h3><p>Distribución del portafolio</p></div></div>
+          <div id="typeBars" class="type-bars"></div>
+        </article>
 
         <article class="mix-card">
           <div class="mix-head">
-            <div>
-              <h3>Mix Tipo de Orden</h3>
-              <p>Participación por canal</p>
-            </div>
+            <div><h3>Mix Tipo de Orden</h3><p>Participación por canal</p></div>
             <select id="mixMonth" onchange="renderMixOnly()"></select>
           </div>
           <div id="orderIconCards" class="icon-cards"></div>
@@ -69,57 +76,29 @@
         </article>
 
         <article class="mix-card">
-          <div class="mix-head">
-            <div>
-              <h3>Mix Producto</h3>
-              <p>Participación por familia</p>
-            </div>
-          </div>
+          <div class="mix-head"><div><h3>Mix Producto</h3><p>Participación por familia</p></div></div>
           <div id="categoryIconCards" class="icon-cards"></div>
           <div class="mini-canvas"><canvas id="chartCategory"></canvas></div>
-        </article>
-
-        <article id="typeVisualCard" class="mix-card hidden">
-          <div class="mix-head">
-            <div>
-              <h3>Tipo tienda 5</h3>
-              <p>Distribución de portafolio</p>
-            </div>
-          </div>
-          <div id="typeBars" class="type-bars"></div>
         </article>
       </aside>
 
       <section class="content">
-        <section class="section-head">
-          <div>
-            <h2>Partner</h2>
-            <p>Rolling · Productividad · Labor · ICA</p>
-          </div>
-        </section>
+        <section id="executivePanel" class="executive-panel"></section>
+
+        <section class="section-head"><div><h2>Partner</h2><p>Rolling · Productividad · Labor · ICA</p></div></section>
         <div id="partnerGrid" class="card-grid"></div>
 
-        <section class="section-head">
-          <div>
-            <h2>Cliente</h2>
-            <p>Venta · AWS · ADT · Ticket · Experiencia</p>
-          </div>
-        </section>
+        <section class="section-head"><div><h2>Cliente</h2><p>Venta · AWS · ADT · Ticket · Experiencia · CTC</p></div></section>
         <div id="customerGrid" class="card-grid"></div>
 
-        <section class="section-head">
-          <div>
-            <h2>Negocio</h2>
-            <p>Delivery · Costo · EBITDA · DT</p>
-          </div>
-        </section>
+        <section class="section-head"><div><h2>Negocio</h2><p>Delivery · Costo · EBITDA · Drive Thru</p></div></section>
         <div id="businessGrid" class="card-grid"></div>
       </section>
     </section>
   </main>
 
   <footer>
-    Fuente: Directorio como nombre oficial · Store_Master para homologación · PCS / Venta / ADT / Ticket / Mix.
+    Directorio como nombre oficial · Store_Master para homologación · PCS / Venta / ADT / Ticket / Mix / Cada Taza Cuenta.
   </footer>
 
   <script src="data.js"></script>
